@@ -1,0 +1,45 @@
+<hr class="mt-12" />
+<div class="flex flex-col p-4 pb-1">
+  <div class="pb-12 text-center">
+    <p class="text-2xl mt-0">Think I could be an asset to you ?</p>
+    <a
+      href="mailto:michael@crustyengineer.com"
+      class="text-3xl stroke-link hover:stroke-bg"
+    >
+      Let's chat!{{ icons::icon(name="send", class="align-baseline w-6 h-6
+      stroke-2")}}
+    </a>
+  </div>
+  <div class="flex justify-center gap-4">
+    <a
+      target="_blank"
+      href="https://github.com/bsodmike"
+      class="stroke-link hover:stroke-bg"
+    >
+      {{ icons::icon(name="github", class="w-6 h-6 stroke-2") }}
+    </a>
+    <a
+      target="_blank"
+      href="https://www.linkedin.com/in/michaeldesilva/"
+      class="stroke-link hover:stroke-bg"
+    >
+      {{ icons::icon(name="linkedin", class="w-6 h-6 stroke-2") }}
+    </a>
+    <a
+      target="_blank"
+      href="{{ get_url(path='axom.xml', trailing_slash=false) }}"
+      class="stroke-link hover:stroke-bg"
+    >
+      {{ icons::icon(name="rss", class="w-6 h-6 stroke-2") }}
+    </a>
+  </div>
+  <p class="text-center stroke-text mb-0">
+    Copyright © {{ now() | date(format="%Y") }} Michael de Silva
+  </p>
+  <p class="text-center mt-0">
+    Built with
+    <a target="_blank" rel="noopener noreferrer" href="https://www.getzola.org"
+      >Zola</a
+    >.
+  </p>
+</div>

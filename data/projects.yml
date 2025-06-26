@@ -1,0 +1,8 @@
+active:
+  - name: rv8803-rs
+    url: https://github.com/bsodmike/rv8803-rs
+    description: Embedded HAL RTC clock driver for the RV8803 chip via I2C
+poc:
+  - name: extensible-encrypter-rs
+    url: https://github.com/bsodmike/extensible-encrypter-rs
+    description: TBC

@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block content %}
+<h1 class="mb-4">{{ page.title }}</h1>
+
+<p class="text-slate-500 pl-2">
+  <time datetime="{{ page.date }}"
+    >Published on {{ page.date | date(format="%e %B %Y") }}</time
+  >, {{ page.word_count }} words, {{ page.word_count / 180 | round }} minutes
+  read
+</p>
+{% if page.toc and page.extra.hero_file %}
+<figure class="mt-1 mb-6">
+  <img
+    src="/images/{{ page.extra.hero_file }}"
+    alt="{{ page.extra.hero_caption }}"
+    class="my-0 border-none max-w-full"
+  />
+  <figcaption class="pl-6 text-slate-500 text-xs">
+    {{ page.extra.hero_caption }}
+  </figcaption>
+</figure>
+{% endif %} {% if page.toc and page.extra.toc %}
+<h2>Table of contents</h2>
+<ul>
+  {% for h1 in page.toc %}
+  <li>
+    <a href="{{ h1.permalink | safe }}">{{ h1.title }}</a>
+    {% if h1.children %}
+    <ul>
+      {% for h2 in h1.children %}
+      <li>
+        <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+        <ul>
+          {% for h3 in h2.children %}
+          <li>
+            <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %} {{ page.content | safe }}
+
+<div class="flex flex-wrap justify-end gap-2 mt-6">
+  {% if page.taxonomies.tags %} {% for tag in page.taxonomies.tags %}
+  <a href="/tags/{{ tag | slugify }}">#{{ tag }}</a>
+  {% endfor %} {% endif %}
+</div>
+{% endblock content %}

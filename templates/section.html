@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ section.title }}</h1>
+
+{{ section.content | safe }}
+
+{% set pages = section.pages %}
+<ul>
+{% for page in pages %}
+  <li>
+    <a href="{{ page.permalink | safe }}" class="visited:text-slate-400 visited:hover:text-bg">
+      {% if page.date %}{{ page.date }} - {% endif %}{{ page.title }}
+    </a>
+  </li>
+{% endfor %}
+</ul>
+{% endblock content %}
