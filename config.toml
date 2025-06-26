@@ -1,4 +1,4 @@
-base_url = "https://blog.crustyengineer.com"
+base_url = "https://crustyengineer.com"
 
 description = "TBD"
 compile_sass = false

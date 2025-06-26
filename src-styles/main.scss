@@ -62,7 +62,7 @@ blockquote { @apply ml-5 pl-2 border-s-8 border-border border-accent italic }
 code, pre { @apply font-mono }
 
 pre {
-  @apply border border-border border-accent/40 rounded max-h-96 p-2.5 overflow-x-auto my-4;
+  @apply border border-border border-accent/40 rounded p-2.5 my-4 overflow-y-auto;
   @apply font-mono;
 }
 
