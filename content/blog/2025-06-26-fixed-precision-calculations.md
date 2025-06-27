@@ -7,9 +7,29 @@ title = "Diving into fixed-precision calculations with fastnum"
 tags = [ "rust", "financial trading"] 
 +++
 
-If we look at [one classic example][1] we know that computers are designed around 1's and 0's, hence the binary system, or base-2. This falls apart when looking at numbers such as `1/3` which evaluates to _0.333333333333333333333333333333333333_… and so on until infinity. That’s right much like 1/10 in binary, 1/3 in decimal also does not have a finite representation and any attempt to store it in a computer using a decimal number will result in a loss of precision. Decimal can display more fractions precisely than binary can, but not all of them.
+From the author of `fastnum`:
 
-This is [why financial systems store the base value][6] in cents. However, computations over aggregate data invariably leads to fixed-point calculations.
+> The key point is that working with decimal numbers follows intuitive rules familiar to everyone from school. For example, we all understand that 1/3 = 0.333333...(3) and that rounding is eventually inevitable. However, the fact that 0.1, when written down in a notebook, might turn into something like 0.10000000000001 in calculations – puzzles many people, because in the real world, we neither interact with the binary number system nor write numbers in it.
+
+He refers to the [classic example of this is 0.1 + 0.2 ≠ 0.3][1]. Since the binary number system, `base-2` is the building block of logic, this falls apart when looking at numbers such as `1/3` which evaluates to _0.33333333333333_… and so on until infinity. That’s right much like 1/10 in binary, 1/3 in decimal also does not have a finite representation and any attempt to store it in a computer using a decimal number will result in a loss of precision. Decimal can display more fractions precisely than binary can, but not all of them.
+
+Here's another great write up, explaining why [financial systems store the base value][6] in cents:
+
+> Because floats and doubles cannot accurately represent the base 10 multiples that we use for money. This issue isn't just for Java, it's for any programming language that uses base 2 floating-point types.
+>
+> In base 10, you can write 10.25 as 1025 _ 10-2 (an integer times a power of 10). IEEE-754 floating-point numbers are different, but a very simple way to think about them is to multiply by a power of two instead. For instance, you could be looking at 164 _ 2-4 (an integer times a power of two), which is also equal to 10.25. That's not how the numbers are represented in memory, but the math implications are the same.
+>
+> Even in base 10, this notation cannot accurately represent most simple fractions. For instance, you can't represent 1/3: the decimal representation is repeating (0.3333...), so there is no finite integer that you can multiply by a power of 10 to get 1/3. You could settle on a long sequence of 3's and a small exponent, like 333333333 \* 10-10, but it is not accurate: if you multiply that by 3, you won't get 1.
+>
+> However, for the purpose of counting money, at least for countries whose money is valued within an order of magnitude of the US dollar, usually all you need is to be able to store multiples of 10-2, so it doesn't really matter that 1/3 can't be represented.
+>
+> The problem with floats and doubles is that the vast majority of money-like numbers don't have an exact representation as an integer times a power of 2. In fact, the only multiples of 0.01 between 0 and 1 (which are significant when dealing with money because they're integer cents) that can be represented exactly as an IEEE-754 binary floating-point number are 0, 0.25, 0.5, 0.75 and 1. All the others are off by a small amount. As an analogy to the 0.333333 example, if you take the floating-point value for 0.01 and you multiply it by 10, you won't get 0.1. Instead you will get something like 0.099999999786...
+>
+> Representing money as a double or float will probably look good at first as the software rounds off the tiny errors, but as you perform more additions, subtractions, multiplications and divisions on inexact numbers, errors will compound and you'll end up with values that are visibly not accurate. This makes floats and doubles inadequate for dealing with money, where perfect accuracy for multiples of base 10 powers is required.
+>
+> A solution that works in just about any language is to use integers instead, and count cents. For instance, 1025 would be $10.25. Several languages also have built-in types to deal with money
+
+-- Source: [https://stackoverflow.com/a/3730040](https://stackoverflow.com/a/3730040)
 
 ## Semantic typing
 
@@ -115,8 +135,6 @@ fn simulate_rounding_failure_converted_fixed() {
 I also found a great quote from the author of `fastnum`:
 
 > the primary purpose of this library – to provide strictly accurate precision with no round-off errors, within the rules of the decimal number system. Naturally, it offers no particular advantage for general rational numbers. In fact, in any numeral system (e.g., base-2, base-10, or base-16), there will always be fractions that can't be represented with a finite number of digits.
->
-> The key point is that working with decimal numbers follows intuitive rules familiar to everyone from school. For example, we all understand that 1/3 = 0.333333...(3) and that rounding is eventually inevitable. However, the fact that 0.1, when written down in a notebook, might turn into something like 0.10000000000001 in calculations – puzzles many people, because in the real world, we neither interact with the binary number system nor write numbers in it.
 
 ## Github
 
