@@ -1,11 +1,25 @@
 +++
-title = "Diving into fixed-precision calculations with fastnum"
+title = "Semantic Types for Money in Rust, with Better Precision and Fixed-point Decimal Arithmetic"
 # description = ""
 
 
 [taxonomies]
 tags = [ "rust", "financial trading"] 
 +++
+
+At the end of this article, I have added further reading material which cover the following topics:
+
+- Why using floats for currencies is generally a bad idea. This is due to floats being a `base-2` (binary) number system, and will always lead to decimal rounding errors.
+- Recommended approach is to store monetary values (currencies) as "cents" (or higher scaling as needed -- see examples for further details).
+
+## Quick overview of the `fastnum` crate
+
+Reasons as to why one would choose this particular crate:
+
+- `fastnum` is a crate that implements fixed-precision calculations using fixed-point decimal arithmetic, which could be summarised succinctly as `coefficient / 10^exponent = 12345 / 100 = 123.45` for a `coefficient` of `12345` and `exponent` of `2`.
+- the `fixed-precision` aspect of this crate makes it blazing fast, when compared to alternatives.
+- The [codebase is only 8-months (new)](https://docs.rs/fastnum/0.2.10/fastnum/index.html) as of the time of typing and appears to be popular and well maintained on Github.
+- Disclaimer: this is now a core dependency of a financial platform that I'm working on for a client. The codebase uses semantic types, and my work largely interacts with them. This article is inspired by this particular implementation.
 
 From the author of `fastnum`:
 
