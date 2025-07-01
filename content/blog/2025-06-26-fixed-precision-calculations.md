@@ -72,7 +72,7 @@ impl<const DECIMALS: usize> Amount<DECIMALS> {
 }
 ```
 
-We can also format this value to a `String`
+We can also format this value to a `String`, either directly
 
 ```rust
     #[test]
@@ -92,6 +92,28 @@ We can also format this value to a `String`
         let value = Amount::<4>::new_scaled_i32(123456);
         let formatted = format!("{}", value);
 
+        assert_eq!(formatted, "12.3456");
+    }
+```
+
+or preferably via the types we introduced earlier. `Pertenthousand` is useful in financial systems, as seen in High-frequency Trading (HFT) platforms; notice that we no longer need to provide annotation to the compiler for the generic type `D` in `Amount<D>` as this is already specified via our semantic types.
+
+```rust
+    #[test]
+    fn convert_to_string_via_semantic_types() {
+        // This is a whole currency unit
+        let value: Euros = Amount::new_scaled_i32(1234);
+        let formatted = format!("{}", value);
+        assert_eq!(formatted, "1234");
+
+        // monetary cents
+        let value: Cents = Amount::new_scaled_i32(1234);
+        let formatted = format!("{}", value);
+        assert_eq!(formatted, "12.34");
+
+        // We've increased our precision here, this is reflected in the formatted output
+        let value: Pertenthousand = Amount::new_scaled_i32(123456);
+        let formatted = format!("{}", value);
         assert_eq!(formatted, "12.3456");
     }
 ```
