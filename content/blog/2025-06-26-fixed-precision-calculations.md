@@ -31,9 +31,11 @@ Here's another great write up, explaining why [financial systems store the base 
 
 -- Source: [https://stackoverflow.com/a/3730040](https://stackoverflow.com/a/3730040)
 
+Let's cover our first topic.
+
 ## Semantic typing
 
-We can use the `newtype` pattern (a.k.a [New Type Idiom](https://doc.rust-lang.org/rust-by-example/generics/new_types.html)) in Rust and introduce such a type into our codebase.
+We can use the `newtype` pattern (a.k.a [New Type Idiom](https://doc.rust-lang.org/rust-by-example/generics/new_types.html)) in Rust and introduce such a type into our codebase. It will be backed by [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) from the `fastnum` crate.
 
 ```rust
 use fastnum::D128;
@@ -48,93 +50,61 @@ type Euros = Amount<0>;
 #[allow(dead_code)]
 type Cents = Amount<2>;
 
+/// A monetary amount in cents/100 (4 decimal places), or "1/10,000" - hence the name.
+pub type Pertenthousand = Amount<4>;
+```
+
+Let's expand the interface for our `Amount<D>` type, starting with two methods.
+
+- `new_scaled_i32` converts an `i32` value returning our `Amount<D>` type. From the example below, this is `1234/(10^2) = 12.34`
+- `new_f64` creates a [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) value, just as it says on the tin.
+
+```rust
 impl<const DECIMALS: usize> Amount<DECIMALS> {
+    /// Treats the input as a scaled integer (e.g. 1234 → 12.34)
+    pub const fn new_scaled_i32(inner: i32) -> Self {
+        Self(D128::from_i32(inner).div(D128::from_i32(10_i32).pow(D128::from_usize(DECIMALS))))
+    }
+
     pub const fn new_f64(inner: f64) -> Self {
         Self(D128::from_f64(inner))
     }
 }
+```
 
+We can also format this value to a `String`
+
+```rust
+    #[test]
+    fn convert_to_string() {
+        // This is a whole currency unit
+        let value = Amount::<0>::new_scaled_i32(1234);
+        let formatted = format!("{}", value);
+
+        assert_eq!(formatted, "1234");
+
+        let value = Amount::<2>::new_scaled_i32(1234);
+        let formatted = format!("{}", value);
+
+        assert_eq!(formatted, "12.34");
+
+        // We've increased our precision here, this is reflected in the formatted output
+        let value = Amount::<4>::new_scaled_i32(123456);
+        let formatted = format!("{}", value);
+
+        assert_eq!(formatted, "12.3456");
+    }
+```
+
+We need to impl the `Display` trait for this to work
+
+```rust
 impl<const DECIMALS: usize> std::fmt::Display for Amount<DECIMALS> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
-
-impl<const DECIMALS: usize> From<D128> for Amount<DECIMALS> {
-    fn from(value: D128) -> Self {
-        Self(value)
-    }
-}
 ```
-
-In this example, we are formatting an aggregate value. The error here shows the high-precision of our [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) type.
-
-```rs
-// https://github.com/bsodmike/rust-scratch/tree/master/fixed_precision_calculations/src/ex_1_part_1.rs
-
-#[should_panic(expected = "assertion `left == right` failed")]
-#[test]
-fn simulate_rounding_failure() {
-   let average: f64 = 56098.9;
-   let r: D128 = D128::from(average) / D128::from(100);
-
-   assert_eq!(r.to_string(), "560.99");
-
-   // thread 'ex_1_part_1::tests::simulate_rounding_failure' panicked at src/ex_1_part_1.rs:44:9:
-   //     assertion `left == right` failed
-   // left: "560.98900000000001455191522836685180664"
-   // right: "560.99"
-}
-
-#[test]
-fn simulate_rounding_failure_fixed() {
-   let average: f64 = 56098.9;
-   let r: D128 = D128::from(average) / D128::from(100);
-   let r = r.round(2);
-
-   assert_eq!(r.to_string(), "560.99");
-}
-```
-
-We can leverage our semantic typing to reflect that the underlying value are Euros, or `Amount<0>`. Rounding is performed since we only care about 2 decimal places.
-
-```rs
-// https://github.com/bsodmike/rust-scratch/tree/master/fixed_precision_calculations/src/ex_1_part_1.rs
-
-#[should_panic(expected = "assertion `left == right` failed")]
-#[test]
-fn simulate_rounding_failure_converted() {
-   let average: f64 = 56098.9;
-   let r: D128 = D128::from(average) / D128::from(100);
-   // let r = r.round(2);
-   let euros: Euros = r.into();
-
-   assert_eq!(euros.to_string(), "560.99");
-   //
-   // thread 'ex_1_part_1::tests::simulate_rounding_failure_converted' panicked at src/ex_1_part_1.rs:68:9:
-   //     assertion `left == right` failed
-   // left: "560.98900000000001455191522836685180664"
-   // right: "560.99"
-}
-
-#[test]
-fn simulate_rounding_failure_converted_fixed() {
-   let average: f64 = 56098.9;
-
-   let r: D128 = D128::from(average) / D128::from(100);
-   let euros: Euros = r.round(2).into();
-
-   assert_eq!(euros.to_string(), "560.99");
-}
-```
-
-## The `fastnum` crate
-
-> Any `fastnum` decimal type consists of an N-bit big unsigned integer, paired with a 64-bit control block which contains a 16-bit scaling factor determines the position of the decimal point, sign, special, and signaling flags. Trailing zeros are preserved and may be exposed when in string form.
-
-I also found a great quote from the author of `fastnum`:
-
-> the primary purpose of this library – to provide strictly accurate precision with no round-off errors, within the rules of the decimal number system. Naturally, it offers no particular advantage for general rational numbers. In fact, in any numeral system (e.g., base-2, base-10, or base-16), there will always be fractions that can't be represented with a finite number of digits.
 
 ## Github
 
