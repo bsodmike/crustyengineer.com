@@ -7,10 +7,16 @@ dev:
     zola serve
 
 build:
+    echo "pwd: `pwd`"
+    ls -la
+
+    cp /usr/local/bin/tailwindcss ./
     ./tailwindcss -i src-styles/main.scss -o static/style.css --minify
     zola build
 
     mkdir -p "./build/www"
     cp -R public "./build/www"
+
+    ls -la "./build/www"
 
     echo "Build: Done"
