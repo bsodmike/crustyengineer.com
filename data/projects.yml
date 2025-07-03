@@ -5,4 +5,17 @@ active:
 poc:
   - name: extensible-encrypter-rs
     url: https://github.com/bsodmike/extensible-encrypter-rs
-    description: TBC
+    description: ""
+research_papers:
+  - name: Analysis of Clarke's Geostationary Orbit (GEO), "Surface" Escape Velocity, and The Earth's Orbital Velocity About The Sun
+    url: https://www.scribd.com/document/16246241/Analysis-of-Clarke-s-Geostationary-Orbit-GEO-Surface-Escape-Velocity-and-the-Earth-s-Orbital-Velocity-About-the-Sun
+    description: ""
+  - name: "Newton's Law of Cooling: Finding The Time of Death of A John Doe"
+    url: https://www.scribd.com/doc/21514655/Newton-s-Law-of-Cooling-Finding-the-Time-of-Death-of-a-John-Doe
+    description: ""
+  - name: Discrete PI and PID Controller Design and Analysis For Digital Implementation
+    url: https://www.scribd.com/doc/19070283/Discrete-PI-and-PID-Controller-Design-and-Analysis-for-Digital-Implementation
+    description: ""
+  # - name:
+  #   url:
+  #   description: ""

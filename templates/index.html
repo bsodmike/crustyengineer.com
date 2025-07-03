@@ -60,4 +60,16 @@
   </li>
   {% endfor %}
 </ul>
-{% else %} No project yet {% endif %} {% endblock content %}
+{% else %} No project yet {% endif %}
+
+<h2>Research Articles</h2>
+{% set projects = load_data(path="data/projects.yml") %} {% if projects %}
+<ul>
+  {% for paper in projects.research_papers %}
+  <li>
+    <a target="_blank" href="{{ paper.url }}">{{ paper.name }}</a> - {{
+    paper.description }}
+  </li>
+  {% endfor %}
+</ul>
+{% else %} No research research paper yet {% endif %} {% endblock content %}
