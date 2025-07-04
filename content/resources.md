@@ -10,6 +10,10 @@ Be kind to authors and buy a hard copy; books are the best way to learn!
 
 # Rust
 
+## Books
+
+- [Rust in Action](../resources/Rust/Rust%20in%20Action%20Book.pdf) (PDF) -- by Tim McNamara / [Amazon](https://amzn.to/3I6iEoP)
+
 ## Async in Rust
 
 - [A Visual Journey Through Async Rust](https://github.com/alexpusch/rust-magic-patterns/blob/master/visual-journey-through-async-rust/Readme.md)
