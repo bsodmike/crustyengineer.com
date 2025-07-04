@@ -17,6 +17,6 @@ build:
     mkdir -p "./build/www"
     cp -R public "./build/www"
 
-    ls -la "./build/www"
+    ls -la "./build/www/public"
 
     echo "Build: Done"
