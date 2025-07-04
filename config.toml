@@ -1,6 +1,8 @@
 base_url = "https://crustyengineer.com"
 
-description = "TBD"
+title = "Michael de Silva (@CrustyEngineer)"
+description = "Remote contractor in software engineering and devops"
+
 compile_sass = false
 default_language = "en"
 generate_feeds = true
