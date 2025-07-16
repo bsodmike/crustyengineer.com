@@ -137,7 +137,7 @@ You can also do this:
     }
 ```
 
-If you used `PhantomData<*const T>` if you have a type that contains are phantom data that contains a `*const T`, your outer type would not be `Send` and `Sync`. These are normally auto-implemented for your types assuming all the members are. `PhantomData<fn() -> T>` is preferable to get those auto implements.
+If you used `PhantomData<*const T>` and if you have a type that contains a phantom data that contains a `*const T`, your outer type would not be `Send` and `Sync`. Normally auto-implemented for your types assuming all the members are. `PhantomData<fn() -> T>` is preferable to get those auto implements.
 
 ## Solving a real example: `strtok` (in Cpp)
 
