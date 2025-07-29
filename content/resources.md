@@ -27,7 +27,7 @@ Be kind to authors and buy a hard copy; books are the best way to learn!
 - [42_CheatSheet](https://github.com/agavrel/42_CheatSheet) -- by [@agavrel](https://github.com/agavrel)
   - This a fantastic reference and I recommend taking a look. Even just for the quotes!
 - [42-Bitwise_Operators
-  ](https://github.com/agavrel/42-Bitwise_Operators)
+  ](https://github.com/agavrel/42-Bitwise_Operators) -- by [@agavrel](https://github.com/agavrel)
 
 # C++ programming
 
