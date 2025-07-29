@@ -14,6 +14,7 @@ build:
     ./tailwindcss -i src-styles/main.scss -o static/style.css --minify
     zola build
 
+    rm -rf "./build"
     mkdir -p "./build/www"
     cp -R public "./build/www"
     cp -R resources "./build/www/public"
