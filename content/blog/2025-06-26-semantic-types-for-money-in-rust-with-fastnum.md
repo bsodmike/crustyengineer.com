@@ -142,6 +142,35 @@ impl<const DECIMALS: usize> std::fmt::Display for Amount<DECIMALS> {
 }
 ```
 
+## Example: Parsing values from CSV
+
+Assume we have a CSV with column data, that we've sufficiently cleaned, let's parse this into `Cents`. In the example below we are handling Euros, which commonly uses `,` as the decimal separator.
+
+- Replace `,` to `.`
+- Parse as `f64`
+- Convert to cents
+- Cast to `i32` to also account for negative values.
+
+Checking the underlying [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) value we can see that it is scaled to `e^(-2)`.
+
+```rs
+/// Parse amount from CSV file into Cents.
+fn parse_amount(value: &str) -> Result<Cents, CustomError> {
+    let value = value.trim();
+
+    if value.is_empty() {
+        return Ok(0.into());
+    }
+
+    // Convert to cents with scaling to e^(-2).
+    let amount = (value.replace(',', ".").parse::<f64>().map_err(|err| {
+        CustomError::ErrorMessage(format!("could not parse amount {value}: {err}"))
+    })? * 100.00) as i32;
+
+    Ok(amount.into())
+}
+```
+
 ## Github
 
 Code examples for this article:
