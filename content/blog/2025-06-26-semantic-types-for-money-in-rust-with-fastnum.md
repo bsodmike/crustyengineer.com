@@ -54,7 +54,8 @@ We can use the `newtype` pattern (a.k.a [New Type Idiom](https://doc.rust-lang.o
 ```rust
 use fastnum::D128;
 
-#[derive(Debug, Clone, Copy, Default)]
+// This example has the entire kitchen sink!
+#[derive(Debug, Clone, Copy, Eq, Ord, PartialOrd, PartialEq, Hash, Default)]
 pub struct Amount<const DECIMALS: usize>(D128);
 
 /// Semantic type to indicate the underlying value is in Euros and not [`Cents`].
@@ -70,7 +71,8 @@ pub type Pertenthousand = Amount<4>;
 
 Let's expand the interface for our `Amount<D>` type, starting with two methods.
 
-- `new_scaled_i32` converts an `i32` value returning our `Amount<D>` type. From the example below, this is `1234/(10^2) = 12.34`
+- `new_scaled_i32`: when creating a value of `Amount<D>`, we use the internal storage to scale it by `N`. In the context of cents `N = 2` and thus, `new_scaled_i32(1234)` is stored internally as `D128(digits=[1234], exp=[-2]`.
+
 - `new_f64` creates a [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) value, just as it says on the tin.
 
 ```rust
@@ -86,60 +88,33 @@ impl<const DECIMALS: usize> Amount<DECIMALS> {
 }
 ```
 
-We can also format this value to a `String`, either directly
+Consider the following example:
 
-```rust
+```rs
     #[test]
-    fn convert_to_string() {
-        // This is a whole currency unit
-        let value = Amount::<0>::new_scaled_i32(1234);
-        let formatted = format!("{}", value);
+    fn convert_from_f64_using_new() {
+        // Assume we have a whole currency unit, parsed from a CSV file, into a f64.  Since this is
+        // a whole currency unit, we need to convert it to cents before we can use our semantic type.
+        let provided = 1.23;
+        // Notice in `new_scaled_i32` above this is scaled before storage, and we can see it is internally
+        // stored with a scaling factor of N
+        let converted: Cents = Amount::new_scaled_i32((provided * 100.00) as i32);
+        assert!(format!("{:?}", &converted).contains("D128(digits=[123], exp=[-2]"));
 
-        assert_eq!(formatted, "1234");
+        // converting from internal storage, this is scaled by N of Amount<N>
+        let d: i32 = converted.into();
+        assert_eq!(d, 123_i32);
 
-        let value = Amount::<2>::new_scaled_i32(1234);
-        let formatted = format!("{}", value);
+        // Let's do the same but change our original value; assume we have 1 Euro:
+        let provided = 1.00;
+        let converted: Cents = Amount::new_scaled_i32((provided * 100.00) as i32);
+        // Interestingly, this is stored as 1e0 (which is the same as 100e-2).
+        assert!(format!("{:?}", &converted).contains("D128(digits=[1], exp=[0]"));
 
-        assert_eq!(formatted, "12.34");
-
-        // We've increased our precision here, this is reflected in the formatted output
-        let value = Amount::<4>::new_scaled_i32(123456);
-        let formatted = format!("{}", value);
-
-        assert_eq!(formatted, "12.3456");
+        // converting from internal storage, this is scaled by N of Amount<N>
+        let d: i32 = converted.into();
+        assert_eq!(d, 100_i32);
     }
-```
-
-or preferably via the types we introduced earlier. `Pertenthousand` is useful in financial systems, as seen in High-frequency Trading (HFT) platforms; notice that we no longer need to provide annotation to the compiler for the generic type `D` in `Amount<D>` as this is already specified via our semantic types.
-
-```rust
-    #[test]
-    fn convert_to_string_via_semantic_types() {
-        // This is a whole currency unit
-        let value: Euros = Amount::new_scaled_i32(1234);
-        let formatted = format!("{}", value);
-        assert_eq!(formatted, "1234");
-
-        // monetary cents
-        let value: Cents = Amount::new_scaled_i32(1234);
-        let formatted = format!("{}", value);
-        assert_eq!(formatted, "12.34");
-
-        // We've increased our precision here, this is reflected in the formatted output
-        let value: Pertenthousand = Amount::new_scaled_i32(123456);
-        let formatted = format!("{}", value);
-        assert_eq!(formatted, "12.3456");
-    }
-```
-
-We need to impl the `Display` trait for this to work
-
-```rust
-impl<const DECIMALS: usize> std::fmt::Display for Amount<DECIMALS> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 ```
 
 ## Example: Parsing values from CSV
@@ -147,24 +122,21 @@ impl<const DECIMALS: usize> std::fmt::Display for Amount<DECIMALS> {
 Assume we have a CSV with column data, that we've sufficiently cleaned, let's parse this into `Cents`. In the example below we are handling Euros, which commonly uses `,` as the decimal separator.
 
 - Replace `,` to `.`
-- Parse as `f64`
-- Convert to cents
-- Cast to `i32` to also account for negative values.
-
-Checking the underlying [`D128`](https://docs.rs/fastnum/0.2.10/fastnum/decimal/type.D128.html) value we can see that it is scaled to `e^(-2)`.
+- Parse `&str` values as `f64`
+- As per our previous example, since the source values are Euros, we need to first convert to cents -- otherwise our semantic typing will be wrong.
 
 ```rs
-/// Parse amount from CSV file into Cents.
-fn parse_amount(value: &str) -> Result<Cents, CustomError> {
+/// Parse amount (Euros) from CSV file into Cents.
+fn parse_amount(value: &str) -> Result<Cents, CsvParseError> {
     let value = value.trim();
 
     if value.is_empty() {
-        return Ok(0.into());
+        return Err(CsvParseError::AmountMissingError(String::default()));
     }
 
-    // Convert to cents with scaling to e^(-2).
+    // Parse amount converting from Euros to cents.
     let amount = (value.replace(',', ".").parse::<f64>().map_err(|err| {
-        CustomError::ErrorMessage(format!("could not parse amount {value}: {err}"))
+        CsvParseError::AmountParseError(format!("Invalid amount: {value}: {err}"))
     })? * 100.00) as i32;
 
     Ok(amount.into())
