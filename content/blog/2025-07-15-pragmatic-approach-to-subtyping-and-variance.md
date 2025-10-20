@@ -141,7 +141,7 @@ If you used `PhantomData<*const T>` and if you have a type that contains a phant
 
 ## Solving a real example: `strtok` (in Cpp)
 
-PENDING
+Refer to the episode [Crust of Rust: Subtyping and Variance][1] where Jon walks you through this example.
 
 ### TBD
 

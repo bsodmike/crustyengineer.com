@@ -84,7 +84,7 @@ Since accounts are a primary aspect, in the sense that not only are they are the
         └── 02_purchase.sql
 ```
 
-## Another abstraction to the repository layer
+## Another "abstraction" to the repository layer
 
 [daymare](https://daymare.net/blogs/everbody-so-creative/) was just commenting on the need for constant abstractions, but this offers two benefits:
 
@@ -92,9 +92,16 @@ Since accounts are a primary aspect, in the sense that not only are they are the
 - as such sub-crate public APIs may not need to change types more often
 - types used by the repository interface can change (as much as they need to), without impacting the sub-crate API.
 
-Now, I can share the stack of sub-crates to another engineer and they can have a full postgres step, which is decoupled from the host Axum application. We can design sub-systems with the knowledge that each tenant has an `Account` and even enforce a foreign-key reference (as needed).
+Please note that I am using the term _abstraction_ here rather loosely. In a strict sense, this would refer to the use of generics and traits (which we do so later on, with feature gates). The repository layer is still the last abstraction layer of significance but we are now placing a crate boundary between this layer and our sqlx sub-crates -- which is also an abstraction in the sense of
 
-Use of a transaction in this example is a "work in progress", but can be ignored for now.
+- strict public API
+- encapsulation
+- organisation
+- visibility (as needed!)
+
+Now, I can share the stack of sub-crates with another engineer and they can have a full postgres step, which is decoupled from the host Axum application. We can design sub-systems with the knowledge that each tenant has an `Account` and even enforce foreign-key references (as needed).
+
+Use of a transaction below is a placeholder, as we may create associated records in join-tables related to the account upon its creation.
 
 ```rs
 impl UserRepository for PostgresDBOutbound {
@@ -107,6 +114,7 @@ impl UserRepository for PostgresDBOutbound {
         let mut txn = self.pool.begin().await?;
 
         let account_id = accounts.create(&mut txn, &creation.email).await?;
+        // note: call to other sub-crates to create any records inside other postgres schema (as needed).
 
         txn.commit().await?;
 
@@ -119,7 +127,7 @@ impl UserRepository for PostgresDBOutbound {
 }
 ```
 
-The new layout
+This is the layout I have adopted, with a sub-crate called `postgres_interfaces` -- more on this below:
 
 ```
 persistence
@@ -138,9 +146,7 @@ persistence
     ├── interfaces
     │   ├── Cargo.toml
     │   └── src
-    │       ├── lib.rs
-    │       ├── models
-    │       └── models.rs
+    │       └── lib.rs
     └── shops
         ├── Cargo.toml
         ├── sqlx.toml
@@ -148,7 +154,7 @@ persistence
             └── lib.rs
 ```
 
-## Disabling abstractions with feature gates
+## Disabling sub-crates with feature gates
 
 Normal repository types would be replaced using feature gates and the same approach can be applied here, of course they would need to be applied in tandem with service, ports, repository and adapters etc - to cover the full "hot" path.
 
@@ -162,10 +168,10 @@ Both connect to the same (production) DB, yet each binary will only handle a sin
 ```rs
 use postgres_interfaces::PostgresShops;
 #[cfg(feature = "shops")]
-use postgres_shops;
+pub use postgres_shops;
+
 #[cfg(feature = "shops")]
 pub type PostgresShopsFacade = GenericPostgresShopsFacade<postgres_shops::ShopManager>;
-
 #[cfg(not(feature = "shops"))]
 pub type PostgresShopsFacade = GenericPostgresShopsFacade<DummyPostgresShopManager>;
 
@@ -187,7 +193,7 @@ impl PostgresShops for DummyPostgresShopManager {}
 
 ## Potential Caveats
 
-`sqlx`'s `query!()` macros can only resolve their schema from within the sub-crates. Integration tests in the host application can navigate the schema if you use `query()` (non-compile time version).
+`sqlx::query!` macros can only resolve their schema from within the sub-crates. Integration tests in the host application can navigate the schema if you use `sqlx::query` (skipping compile time checks).
 
 ## Conclusion
 
