@@ -193,7 +193,7 @@ impl PostgresShops for DummyPostgresShopManager {}
 
 ## Potential Caveats
 
-`sqlx::query!` macros can only resolve their schema from within the sub-crates. Integration tests in the host application can navigate the schema if you use `sqlx::query` (skipping compile time checks).
+`sqlx::query!` macros _may_ only work in sub-crates, however, whilst writing an integration test (in an unrelated crate, meaning one that does not have a `sqlx.toml` file) seems to just work fine. Even running `cargo sqlx prepare --workspace -- --all-targets` picked up these changes in the integration tests.
 
 ## Conclusion
 
@@ -204,3 +204,4 @@ What are your thoughts in adding another layer of abstraction, would you conside
 P.S. this is not limited to Axum, but I named the article as such as may extend this in the future with code examples of Axum handlers etc.
 
 - [SQLx 0.9.0-alpha.1 released! `smol`/`async-global-executor` support, configuration with `sqlx.toml` files, lots of ergonomic improvements, and more!](https://www.reddit.com/r/rust/comments/1o72hab/sqlx_090alpha1_released_smolasyncglobalexecutor/)
+- [Reddit thread](https://www.reddit.com/r/rust/comments/1oarzsm/axum_multitenancy_with_hexarch_and_abstracting/) for this article.
