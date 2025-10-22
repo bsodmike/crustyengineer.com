@@ -154,46 +154,11 @@ persistence
             └── lib.rs
 ```
 
-## Disabling sub-crates with feature gates
-
-Normal repository types would be replaced using feature gates and the same approach can be applied here, of course they would need to be applied in tandem with service, ports, repository and adapters etc - to cover the full "hot" path.
-
-Axum route handlers can be gated to handle their disabled state. We can now run the same binary with different feature gates enabled. Imagine,
-
-- container A: binary with feature "shop" enabled
-- container B: binary with feature "reports" enabled
-
-Both connect to the same (production) DB, yet each binary will only handle a single vertical.
-
-```rs
-use postgres_interfaces::PostgresShops;
-#[cfg(feature = "shops")]
-pub use postgres_shops;
-
-#[cfg(feature = "shops")]
-pub type PostgresShopsFacade = GenericPostgresShopsFacade<postgres_shops::ShopManager>;
-#[cfg(not(feature = "shops"))]
-pub type PostgresShopsFacade = GenericPostgresShopsFacade<DummyPostgresShopManager>;
-
-/// Uses the Facade structural pattern
-/// Ref: https://refactoring.guru/design-patterns/facade
-pub struct GenericPostgresShopsFacade<S: PostgresShops> {
-    pub manager: S,
-}
-
-impl<S: PostgresShops> GenericPostgresShopsFacade<S> {
-    pub const fn new(manager: S) -> Self {
-        Self { manager }
-    }
-}
-
-pub struct DummyPostgresShopManager;
-impl PostgresShops for DummyPostgresShopManager {}
-```
-
 ## Potential Caveats
 
-`sqlx::query!` macros _may_ only work in sub-crates, however, whilst writing an integration test (in an unrelated crate, meaning one that does not have a `sqlx.toml` file) seems to just work fine. Even running `cargo sqlx prepare --workspace -- --all-targets` picked up these changes in the integration tests.
+Whilst writing an integration test (in an unrelated crate, meaning one that does not have a `sqlx.toml` file) seems to just work fine. Even running `cargo sqlx prepare --workspace -- --all-targets` picked up these changes in the integration tests.
+
+TBD
 
 ## Conclusion
 
@@ -201,7 +166,7 @@ I also wrote about some [challenges I was facing with Postgres namespaces](https
 
 What are your thoughts in adding another layer of abstraction, would you consider this to be extreme?
 
-P.S. this is not limited to Axum, but I named the article as such as may extend this in the future with code examples of Axum handlers etc.
+P.S. this is not limited to Axum, but named the article as such as I may extend this in the future with code examples of Axum handlers etc.
 
 - [SQLx 0.9.0-alpha.1 released! `smol`/`async-global-executor` support, configuration with `sqlx.toml` files, lots of ergonomic improvements, and more!](https://www.reddit.com/r/rust/comments/1o72hab/sqlx_090alpha1_released_smolasyncglobalexecutor/)
 - [Reddit thread](https://www.reddit.com/r/rust/comments/1oarzsm/axum_multitenancy_with_hexarch_and_abstracting/) for this article.
