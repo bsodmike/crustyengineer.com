@@ -1,7 +1,9 @@
 +++
 title = "Semantic Types for Money in Rust, with Better Precision and Fixed-point Decimal Arithmetic"
-# description = ""
+toc = true
 
+[extra]
+toc = true
 
 [taxonomies]
 tags = [ "rust", "financial trading"] 

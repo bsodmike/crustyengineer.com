@@ -43,7 +43,9 @@
   </li>
   {% endfor %}
 </ul>
-{% endif %} {{ page.content | safe }}
+{% endif %}
+<br />
+{{ page.content | safe }}
 
 <div class="flex flex-wrap justify-end gap-2 mt-6">
   {% if page.taxonomies.tags %} {% for tag in page.taxonomies.tags %}
