@@ -8,7 +8,7 @@ tags = ["rust"]
 
 When processing data as a read operation from any persistence layer of choice, bulk of the time is spent as:
 
-- performing a query / search operation, pulling the data into a `Vec<(_ /* id */, _ /* payload */)>`
+- performing a query / search operation, pulling the data into a `HashMap<(_ /* id */, _ /* vector payload */)>`.
 - transformations & compute
 - formatting & transform to match output type
 - return owned output value
