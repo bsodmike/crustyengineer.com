@@ -13,7 +13,7 @@ When processing data as a read operation from any persistence layer of choice, b
 - formatting & transform to match output type
 - return owned output value
 
-It is tempting to write this, but note that for-loops in Rust are just syntactic sugar for [IntoIterator](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html). This means the contents are _moved_ into the block
+It is always tempting to start like this
 
 ```rs
 let collection1 = vec![1, 2, 3];
@@ -24,6 +24,12 @@ for inner in collection2 {
     for items in inner {}
 }
 ```
+
+For those unfamiliar, for-loops in Rust are sugar for [IntoIterator](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html), which means the contents are consumed by the block.
+
+Curious readers will find [the rust docs covers its de-sugaring](https://doc.rust-lang.org/std/iter/index.html#for-loops-and-intoiterator) and we can see `fn into_iter(self)` within the trait takes `self` and not `&self`. It also makes sense that `Item` in `type IntoIter: Iterator<Item = Self::Item>` is also an owned value considering this is process inside a `loop`.
+
+> _MUSING_: I do not want to think about `Item` being a shared reference, as this would not only complicate matters with life-times and/or alternatively involving `Pin<Box>` into this mix. Performance would be terrible, but it might be a fun brain teaser; thoughts?
 
 Being consumed means that we cannot access them at a later point. This does not work:
 
