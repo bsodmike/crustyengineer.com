@@ -1,6 +1,5 @@
 +++
 title = "Dark Arts of Unsafe Rust Programming"
-# description = ""
 
 [taxonomies]
 tags = [ "rust", "unsafe", "undefined behaviour"] 

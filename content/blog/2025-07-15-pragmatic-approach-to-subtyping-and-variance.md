@@ -2,7 +2,6 @@
 title = "Rust: A Pragmatic Approach to Subtyping and Variance"
 # description = ""
 
-
 [taxonomies]
 tags = [ "rust", "language foundations"] 
 +++
