@@ -27,7 +27,7 @@ for inner in collection2 {
 
 For those unfamiliar, for-loops in Rust are sugar for [IntoIterator](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html), which means the contents are consumed by the block.
 
-Curious readers will find [the rust docs covers its de-sugaring](https://doc.rust-lang.org/std/iter/index.html#for-loops-and-intoiterator) and we can see `fn into_iter(self)` within the trait takes `self` and not `&self`. It also makes sense that `Item` in `type IntoIter: Iterator<Item = Self::Item>` is also an owned value considering this is process inside a `loop`.
+Curious readers will find [the rust docs covers its de-sugaring](https://doc.rust-lang.org/std/iter/index.html#for-loops-and-intoiterator) and we can see `fn into_iter(self)` within the trait takes `self` and not `&self`. It also makes sense that `Item` in `type IntoIter: Iterator<Item = Self::Item>` is also an owned value considering this processed inside a `loop`.
 
 > _MUSING_: I do not want to think about `Item` being a shared reference, as this would not only complicate matters with life-times and/or alternatively involving `Pin<Box>` into this mix. Performance would be terrible, but it might be a fun brain teaser; thoughts?
 
