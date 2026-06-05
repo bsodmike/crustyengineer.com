@@ -29,7 +29,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['"MPLUS1"', ...defaultTheme.fontFamily.sans],
-        mono: ['"MPLUS1Code"', ...defaultTheme.fontFamily.sans],
+        mono: ['"Hack-Regular"', ...defaultTheme.fontFamily.sans],
       },
     },
   },

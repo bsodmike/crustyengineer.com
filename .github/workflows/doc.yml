@@ -45,7 +45,7 @@ jobs:
           sudo mv zola /usr/local/bin
       - name: Download TailwindCSS CLI
         run: |
-          TAILWIND_VERSION="v3.4.16"
+          TAILWIND_VERSION="v4.3.0"
           ARCH=$(uname -m)
           case "$ARCH" in
             x86_64)

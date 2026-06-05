@@ -1,8 +1,6 @@
-@import 'fonts/fonts.scss';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.js";
+@import "tailwindcss";
+@import '../fonts/fonts.scss';
 
 *, *:before, *:after { @apply box-border }
 
