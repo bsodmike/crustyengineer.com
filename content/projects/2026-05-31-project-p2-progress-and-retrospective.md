@@ -21,7 +21,7 @@ Things start to get dicey pretty quickly once you step into the world of account
 
 ### Plain text accounting options
 
-We have the "what", but before we can ask the "how", let's also consider the "why?". This required a wee bit of research and I _always_ reach out for open source solutions first, and this lead me to
+We have the "what", but before we can ask the "how", let's also consider the "why?". This required a wee bit of research and I _always_ reach out for open source solutions first, leading me to
 
 - [ledger-cli.org](https://ledger-cli.org/)
 - [gnuCash](https://gnucash.org/)
