@@ -1,5 +1,5 @@
 +++
-title = "The reflex of deriving `serde` traits"
+title = "The Reflex of Deriving `serde` Traits"
 
 [taxonomies]
 tags = ["rust"] 
