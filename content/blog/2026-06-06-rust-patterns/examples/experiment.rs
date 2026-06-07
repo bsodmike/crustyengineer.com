@@ -5,13 +5,9 @@ trait Drawable: Display {
     fn area(&self) -> f64;
 }
 
-trait LoggableDrawables: Drawable + Display {}
-
 struct Circle {
     radius: f64,
 }
-
-impl LoggableDrawables for Circle {}
 
 impl Drawable for Circle {
     fn draw(&self) {
@@ -32,8 +28,6 @@ struct Square {
     side: f64,
 }
 
-impl LoggableDrawables for Square {}
-
 impl Drawable for Square {
     fn draw(&self) {
         println!("Drawing square s={}", self.side);
@@ -49,14 +43,15 @@ impl Display for Square {
     }
 }
 
-fn log_all(items: &[Box<dyn LoggableDrawables>]) {
+// This can also be `fn log_all<T: Display>(items: &[T])`
+fn log_all(items: &[impl Display]) {
     for item in items {
         println!("{item}"); // vtable dispatch
     }
 }
 
 fn main() {
-    let shapes: Vec<Box<dyn LoggableDrawables>> = vec![
+    let shapes: Vec<Box<dyn Drawable>> = vec![
         Box::new(Circle { radius: 5.0 }),
         Box::new(Square { side: 3.0 }),
     ];
