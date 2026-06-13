@@ -28,39 +28,58 @@
   </div>
 </div>
 
-<h2>Recent Articles</h2>
-{% set blog = get_section(path="blog/_index.md") %} {% set pages = blog.pages %}
-{% if pages %}
-<ul>
-  {% for page in pages %}
-  <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
-  {% endfor %}
-</ul>
-{% else %} No article yet {% endif %}
+<div
+  class="flex flex-col md:flex-row rounded-md border border-dashed border-yellow-500 max-2-full mt-8 p-4"
+>
+  <div class="flex flex-col">
+    <h2 class="!mt-0">Recent Articles</h2>
+    {% set blog = get_section(path="blog/_index.md") %} {% set pages =
+    blog.pages %} {% if pages %}
 
-<h2>Proof of Concept (POC) Projects</h2>
-{% set projects = load_data(path="data/projects.yml") %} {% if projects %}
-<ul>
-  {% for project in projects.poc %}
-  <li>
-    <a target="_blank" href="{{ project.url }}">{{ project.name }}</a> - {{
-    project.description }}
-  </li>
-  {% endfor %}
-</ul>
-{% else %} No project yet {% endif %}
+    <ul>
+      {% for page in pages %}
+      <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+      {% endfor %}
+    </ul>
 
-<h2>Completed Projects</h2>
-{% set projects = load_data(path="data/projects.yml") %} {% if projects %}
-<ul>
-  {% for project in projects.active %}
-  <li>
-    <a target="_blank" href="{{ project.url }}">{{ project.name }}</a> - {{
-    project.description }}
-  </li>
-  {% endfor %}
-</ul>
-{% else %} No project yet {% endif %}
+    {% else %} No article yet {% endif %}
+  </div>
+  <div class="md:text-start">
+    <h2 class="!mt-0">Guides & Workflow</h2>
+    {% set workflow = get_section(path="workflow/_index.md") %} {% set pages =
+    workflow.pages %} {% if pages %}
+    <ul>
+      {% for page in pages %} {% if page.extra.enabled %}
+      <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+      {% endif %} {% endfor %}
+    </ul>
+    {% else %} No article yet {% endif %}
+
+    <h2>Proof of Concept (POC) Projects</h2>
+    {% set projects = load_data(path="data/projects.yml") %} {% if projects %}
+    <ul>
+      {% for project in projects.poc %}
+      <li>
+        <a target="_blank" href="{{ project.url }}">{{ project.name }}</a> - {{
+        project.description }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %} No project yet {% endif %}
+
+    <h2>Completed Projects</h2>
+    {% set projects = load_data(path="data/projects.yml") %} {% if projects %}
+    <ul>
+      {% for project in projects.active %}
+      <li>
+        <a target="_blank" href="{{ project.url }}">{{ project.name }}</a> - {{
+        project.description }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %} No project yet {% endif %}
+  </div>
+</div>
 
 <h2>Research Articles</h2>
 {% set projects = load_data(path="data/projects.yml") %} {% if projects %}
