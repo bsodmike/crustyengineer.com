@@ -1,31 +1,161 @@
 +++
 title = "Semantic Types for Money in Rust, with Better Precision and Fixed-point Decimal Arithmetic"
-# description = ""
+toc = true
 
+[extra]
+toc = true
 
 [taxonomies]
 tags = [ "rust", "financial trading"] 
 +++
 
-At the end of this article, I have added further reading material which cover the following topics:
+## Overview
 
-- Why using floats for currencies is generally a bad idea. This is due to floats being a `base-2` (binary) number system, and will always lead to decimal rounding errors.
-- Recommended approach is to store monetary values (currencies) as "cents" (or higher scaling as needed -- see examples for further details).
+> 💡 This section has been combined with an excellent overview of the subject provided by [WuBingzheng](https://github.com/WuBingzheng) from his article [Comparison and Benchmarking of Rust Decimal Crates](https://wubingzheng.github.io/en/Decimal-Crates-Comparison.html#benchmark-comparison).
+>
+> His intro material is targeted at new audiences, by his own admission, and has been added to improve context in my article. I do not see the need to "reinvent" the wheel, when he has already provided excellent coverage and depth on the topic.
+>
+> I also share his sentiment to avoid ambiguity and use Fixed-size instead of Fixed-precision, where applicable.
+
+Since the binary number system, `base-2` is the building block of logic, this falls apart when looking at numbers such as `1/3` which evaluates to _0.33333333333333_… and so on until infinity. Binary fractions cannot represent decimal fractions exactly. Consider for example, `f64` as this is a good example of this [classic arithmetic error: `0.1 + 0.2 ≠ 0.3`][1]. Here's a quick quote from the author of `fastnum`:
+
+> The key point is that working with decimal numbers follows intuitive rules familiar to everyone from school. For example, we all understand that 1/3 = 0.333333...(3) and that rounding is eventually inevitable. However, the fact that 0.1, when written down in a notebook, might turn into something like 0.10000000000001 in calculations – puzzles many people, because in the real world, we neither interact with the binary number system nor write numbers in it.
+
+That’s right much like 1/10 in binary, 1/3 in decimal also does not have a finite representation and any attempt to store it in a computer using a decimal number will result in a loss of precision. Decimal can display more fractions precisely than binary can, but not all of them.
+
+In financial applications we require exact representation of decimal fractions. This is why decimal crates are needed. These use integers to represent the mantissa, along with a scale representing the number of decimal places. For example, the value `1.23` can be represented using integer `123` with `scale = 2`.
+
+There are many decimal crates in the Rust ecosystem, each with different designs
+and trade-offs. Their differences mainly fall into two dimensions:
+
+1. Whether the scale is fixed or variable. This corresponds to
+   [Fixed-point](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)
+   vs [Floating-point](https://en.wikipedia.org/wiki/Floating-point_arithmetic).
+
+2. Whether the count of integers are fixed or arbitrary. This corresponds to
+   [Fixed-precision](https://en.wikipedia.org/wiki/Fixed-precision_arithmetic)
+   vs [Arbitrary-precision](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic).
+
+The first two sections ([Fixed-point and Floating-point](#fixed-point-and-floating-point),
+[Fixed-size and Arbitrary-precision](#fixed-size-and-arbitrary-precision))
+introduce the characteristics of these categories. There is nothing
+particularly new here, so experienced readers may skip them.
+
+## Fixed-point and Floating-point
+
+_[Fixed-point](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)_ vs _[Floating-point](https://en.wikipedia.org/wiki/Floating-point_arithmetic)_.
+
+In fixed-point arithmetic, the scale is fixed and bound to the type. In floating-point arithmetic, the scale is variable and stored in each instance.
+
+Let's illustrate this with code. A typical _fixed-point_ type definition might look like this:
+
+```rust
+struct FixedPoint<const SCALE: i32>(i128); // scale is bound to type
+```
+
+A typical _floating-point_ decimal type might look like this:
+
+```rust
+struct FloatingPoint {
+    mantissa: i128,
+    scale: i32, // scale is stored in each instance
+}
+```
+
+This clearly shows that fixed-point numbers have fixed decimal precision, while floating-point decimals have variable precision. For example, `FixedPoint<2>` always has 2 decimal places, while the precision of `FloatingPoint` depends
+on each instance's scale.
+
+Because of this distinction, _fixed-point_ and _floating-point_ types exhibit the following differences:
+
+1. Fixed-point numbers have a smaller representable range, while floating-point
+   numbers can represent a much larger range. This is because floating-point
+   numbers sacrifice decimal precision as values become larger.
+
+2. Fixed-point arithmetic is simpler and faster, while floating-point arithmetic
+   is more complex and slower. For example, addition for fixed-point numbers only
+   requires integer addition on the mantissa. Floating-point addition must first
+   check whether the scales are equal (this check itself can already be slower
+   than the addition), and if not, align the scales through multiplication. Refer to the [detailed discussed in the benchmark section](https://wubingzheng.github.io/en/Decimal-Crates-Comparison.html#benchmark-comparison).
+
+3. Fixed-point arithmetic is somewhat more cumbersome to use, while floating-point
+   arithmetic is more convenient. For example, with the `FixedPoint` type above,
+   the scale must be determined at compile time for each type, such as how many
+   decimal places `Balance` or `Price` should have. Floating-point decimals do
+   not require this consideration.
+
+The difference between the two is somewhat analogous to the difference between
+statically typed and dynamically typed languages.
+
+Most applications use decimal crates simply to represent decimal fractions exactly,
+without particularly high requirements for performance or strict decimal precision.
+In such cases, floating-point decimals are usually preferred for convenience.
+However, for more serious services, especially many financial systems that require
+strict decimal precision or high performance, fixed-point decimals are recommended.
+For example, USD assets should have exactly 2 decimal places, neither more nor less.
+
+NOTE: Since built-in floating-point types in programming languages (such as C's
+`float` and `double`, or Rust's `f32` and `f64`) are commonly referred to as
+"floating-point", and these types cannot represent decimal fractions exactly,
+many people mistakenly think that "floating-point" inherently cannot represent
+decimal fractions exactly. This is WRONG! More precisely, these are "binary
+floating-point" numbers. The inability to represent decimal fractions exactly
+comes from the "binary" part, not the "floating-point" part. Because people
+often omit the word "binary", floating-point arithmetic unfairly gets blamed.
+In fact, even _binary fixed-point_ types, such as the
+[`fixed`](https://docs.rs/fixed/latest/fixed/) crate, also cannot represent
+decimal fractions exactly. As long as a crate is decimal-based, whether
+fixed-point or floating-point, it can represent decimal fractions exactly.
+
+NOTE: Floating-point arithmetic has a standard called
+[IEEE 754](https://en.wikipedia.org/wiki/IEEE_754), which defines both binary
+floating-point formats (used by `f32`/`f64`) and decimal floating-point formats.
+However, this standard is only _one_ implementation approach for floating-point
+arithmetic, not the entirety of floating-point arithmetic itself. Other
+implementations are also possible. In practice, most decimal crates do not
+follow IEEE 754 decimal formats.
+
+## Fixed-size and Arbitrary-precision
+
+_[Fixed-precision](https://en.wikipedia.org/wiki/Fixed-precision_arithmetic)_ vs
+_[Arbitrary-precision](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic)_.
+
+First, let's clarify the meaning of the word "precision" here. The term has two conflicting meanings:
+
+- Number of fraction places
+- Number of significant digits
+
+For example, the value `1.23` has 2 fraction places but 3 significant digits.
+Both meanings are widely used. For example,
+[std::fmt](https://doc.rust-lang.org/std/fmt/index.html#precision) uses the
+former meaning, while here (Fixed-precision vs Arbitrary-precision) the latter
+meaning is used. This is the [standard terminology](https://en.wikipedia.org/wiki/Fixed-precision_arithmetic),
+but it easily causes confusion. "Fixed-precision" is often misunderstood as
+fixed fraction places, leading to confusion with fixed-point arithmetic.
+
+To avoid ambiguity, this article uses the term _Fixed-size_ instead of _Fixed-precision_.
+
+As the name suggests, Fixed-size types use a fixed number of integers (one or more).
+Arbitrary-precision types use as many integers as necessary: expanding to the
+left to avoid overflow, and expanding to the right to avoid precision loss.
+
+Naturally, this requires heap allocation, meaning the type is not `Copy`,
+and the crate is not `no-alloc`. All operations also become significantly slower.
+Unless there is a clear requirement for arbitrary precision, Fixed-size types
+are generally preferable.
+
+## Choosing Crates & Benchmarks
+
+Refer to [Comparison and Benchmarking of Rust Decimal Crates: Benchmarking](https://wubingzheng.github.io/en/Decimal-Crates-Comparison.html#choosing-crates) by [WuBingzheng](https://github.com/WuBingzheng).
+
+The most common and popular are `bigdecimal` (Floating-point / Arbitrary-precision), `fastnum`, and `rust_decimal`, where both are Floating-point & Fixed-size.
 
 ## Quick overview of the `fastnum` crate
 
 Reasons as to why one would choose this particular crate:
 
 - `fastnum` is a crate that implements fixed-precision calculations using fixed-point decimal arithmetic, which could be summarised succinctly as `coefficient / 10^exponent = 12345 / 100 = 123.45` for a `coefficient` of `12345` and `exponent` of `2`.
-- the `fixed-precision` aspect of this crate makes it blazing fast, when compared to alternatives.
 - The [codebase is only 8-months (new)](https://docs.rs/fastnum/0.2.10/fastnum/index.html) as of the time of typing and appears to be popular and well maintained on Github.
 - Disclaimer: this is now a core dependency of a financial platform that I'm working on for a client. The codebase uses semantic types, and my work largely interacts with them. This article is inspired by this particular implementation.
-
-From the author of `fastnum`:
-
-> The key point is that working with decimal numbers follows intuitive rules familiar to everyone from school. For example, we all understand that 1/3 = 0.333333...(3) and that rounding is eventually inevitable. However, the fact that 0.1, when written down in a notebook, might turn into something like 0.10000000000001 in calculations – puzzles many people, because in the real world, we neither interact with the binary number system nor write numbers in it.
-
-He refers to the [classic example of this is 0.1 + 0.2 ≠ 0.3][1]. Since the binary number system, `base-2` is the building block of logic, this falls apart when looking at numbers such as `1/3` which evaluates to _0.33333333333333_… and so on until infinity. That’s right much like 1/10 in binary, 1/3 in decimal also does not have a finite representation and any attempt to store it in a computer using a decimal number will result in a loss of precision. Decimal can display more fractions precisely than binary can, but not all of them.
 
 Here's another great write up, explaining why [financial systems store the base value][6] in cents:
 
