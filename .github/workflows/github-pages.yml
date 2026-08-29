@@ -28,21 +28,16 @@ jobs:
           just-version: 1.5.0 # optional semver specification, otherwise latest
       - name: Install Zola
         run: |
-          # Get latest tag (e.g., "v0.18.0")
-          ZOLA_TAG=$(curl -s https://api.github.com/repos/getzola/zola/releases/latest | jq -r .tag_name)
-
-          # Strip the 'v' prefix (e.g., "v0.18.0" -> "0.18.0")
-          ZOLA_VERSION=${ZOLA_TAG#v}
-
-          # Build the correct asset name
+          ZOLA_VERSION="0.22.1"
+          ZOLA_TAG="v${ZOLA_VERSION}"
           ASSET="zola-v${ZOLA_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
 
-          # Download the actual release tarball
           curl -sL "https://github.com/getzola/zola/releases/download/${ZOLA_TAG}/${ASSET}" -o zola.tar.gz
 
-          # Unpack and install
           tar -xzf zola.tar.gz
-          sudo mv zola /usr/local/bin
+          sudo mv zola /usr/local/bin/zola
+
+          zola --version
       - name: Download TailwindCSS CLI
         run: |
           TAILWIND_VERSION="v4.3.0"
