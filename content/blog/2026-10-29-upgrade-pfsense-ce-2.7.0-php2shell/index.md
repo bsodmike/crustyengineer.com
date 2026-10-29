@@ -1,5 +1,5 @@
 +++
-title = "Upgrading pfSense CE 2.7.0 to 2.8.1 (and surviving too small an EFI partition)"
+title = "Upgrade pfSense CE 2.7.0 to 2.8.1 (and surviving too small an EFI partition) for PHP2Shell"
 # description = ""
 
 [taxonomies]
@@ -183,6 +183,8 @@ Existing UEFI FreeBSD boot entry found: not creating a new one
 Finished updating ESP
 Done.  System is going to be upgraded.  Rebooting in 10 seconds.
 ```
+
+Make sure you verify the install post reboot and check the base upgrade is completed and you have the patched version of PHP on your system.
 
 ---
 
