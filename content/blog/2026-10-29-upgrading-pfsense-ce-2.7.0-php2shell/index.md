@@ -6,7 +6,7 @@ title = "Upgrading pfSense CE 2.7.0 to 2.8.1 (and surviving too small an EFI par
 tags = ["php2shell", "pfSense"] 
 +++
 
-Disclaimed: a stochastic model was used to parse terminal logs to prepare this content; I, as the human, have cleaned this up for readability.  I, also as the human, ran these comands to upgrade and reboot my pfSense "PC in a box" router.
+Disclaimer: a stochastic model was used to parse terminal logs to prepare this content; I, as the human, have cleaned this up for readability. I, also as the human, ran these commands to upgrade and reboot my pfSense "PC in a box" router.
 
 Goal: get an old pfSense CE box from **2.7.0-RELEASE** up to **2.8.1-RELEASE** to pick up the PHP 8.3.36 fix for the "PHP2Shell" vulnerabilities (CVE-2026-109618 / CVE-2026-109619). The GUI refused to switch the update branch, which kicked off a longer-than-expected journey.
 
@@ -14,11 +14,11 @@ Goal: get an old pfSense CE box from **2.7.0-RELEASE** up to **2.8.1-RELEASE** t
 
 ## 1. The GUI wouldn't switch branches
 
-System > Update > Update Settings *showed* 2.8.1, but selecting it reverted to 2.7.0. The 2.7.0 build's repo definition was stale, so the dropdown wouldn't stick. Moved to the shell.
+System > Update > Update Settings _showed_ 2.8.1, but selecting it reverted to 2.7.0. The 2.7.0 build's repo definition was stale, so the dropdown wouldn't stick. Moved to the shell.
 
 ## 2. First shell attempt — privilege + OS-version warnings
 
-Run as root, you can use `sudo -i` once you login to the pfsense router:
+Run as root, you can use `sudo -i` once you login to the pfSense router:
 
 ```shell
 export TERM="xterm"
@@ -68,7 +68,7 @@ Unable to update boot code on /dev/ada0
 
 This is pfSense Bug #15081: the EFI **partition** is a normal size, but the FAT **filesystem** inside it was formatted tiny by an old installer. The new loader won't fit.
 
-**Do not reboot here** — the old loader was already deleted and the new one didn't write. If I rebooted here, it wouldn't be able to boot back into pfsense. 
+**Do not reboot here** — the old loader was already deleted and the new one didn't write. If I rebooted here, it wouldn't be able to boot back into pfSense.
 
 ## 6. Diagnose the ESP
 
@@ -189,7 +189,7 @@ Done.  System is going to be upgraded.  Rebooting in 10 seconds.
 ## Lessons learned
 
 - **The GUI branch selector on 2.7.0 is buggy** — do the branch switch from the CLI.
-- **Old ESPs are a landmine.** A 200M EFI partition can still hold a ~700KB FAT filesystem. Reformat it to FAT16 and the loader fits; no reinstall needed if the *partition* is large enough. (If the partition itself is ~800K, you must reinstall.)
+- **Old ESPs are a landmine.** A 200M EFI partition can still hold a ~700KB FAT filesystem. Reformat it to FAT16 and the loader fits; no reinstall needed if the _partition_ is large enough. (If the partition itself is ~800K, you must reinstall.)
 - **Never reboot after "Unable to update boot code"** until you've written a valid loader — the old one may already be gone.
 - **"error fetching package" can be TLS, not DNS.** `certctl rehash` after a partial upgrade fixes a stale CA bundle that looks exactly like a DNS failure.
 - **DNSSEC/Unbound fails closed** — if it dies mid-upgrade, the box resolves nothing until you bypass it or it's restarted on a healthy base.
