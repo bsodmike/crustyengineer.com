@@ -4,6 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-the-reflex-of-deriving-serde-traits/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-the-reflex-of-deriving-serde-traits/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-rust-patterns/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-rust-patterns/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-rust-patterns/target" />
       <excludeFolder url="file://$MODULE_DIR$/content/blog/2026-06-06-the-reflex-of-deriving-serde-traits/target" />
     </content>
     <orderEntry type="inheritedJdk" />
